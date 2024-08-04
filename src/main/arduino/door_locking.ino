@@ -1,7 +1,8 @@
 #include <Keypad.h>
 #include <LiquidCrystal.h>
 #include <Servo.h>
-#define Password_Length 5
+
+#define Password_Length 11
 
 Servo myservo;
 LiquidCrystal lcd(A0, A1, A2, A3, A4, A5);
@@ -10,7 +11,7 @@ int arg = 0;
 int buzz = 8; 
 
 char Data[Password_Length];
-char Master[Password_Length] = "1234";
+char Master[Password_Length] = "0000000000";
 byte data_count = 0;
 
 bool door = false;
@@ -39,6 +40,7 @@ void setup() {
   loading("Loading");
   lcd.clear();
   setPassword();  
+  Serial.begin(9600); // シリアル通信を初期化
 }
 
 void loop() {
@@ -101,12 +103,11 @@ void Open() {
     if (!strcmp(Data, Master)) {
       lcd.clear();
       ServoOpen();
-      lcd.print("Unlocking ok");
+      lcd.print("Unlocking OK");
       door = true;
       delay(5000); 
       countdown();
       ServoClose();
-      lcd.print("Time is up!");
       delay(1000);
       lcd.clear();
       door = false;
@@ -123,6 +124,8 @@ void Open() {
 }
 
 void countdown() {
+  Serial.println("Countdown started"); // カウントダウン開始メッセージを表示
+  unsigned long startTime = millis(); // 開始時刻を記録
   for (int i = 5; i > 0; i--) {
     lcd.clear();
     lcd.setCursor(0, 0);
@@ -130,8 +133,12 @@ void countdown() {
     lcd.setCursor(6, 1);
     lcd.print(i);
     countdownBuzz();
-    delay(1000);
+    delay(1000); // 1秒の遅延
   }
+  unsigned long endTime = millis(); // 終了時刻を記録
+  Serial.print("Countdown duration: ");
+  Serial.print(endTime - startTime); // 遅延時間を表示
+  Serial.println(" ms");
 }
 
 void incorrectBuzz() {
